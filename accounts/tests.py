@@ -1,11 +1,11 @@
 from django.contrib.auth.models import User
-from django.test import TestCase
 from django.urls import reverse
 
 from ads.factories import DEFAULT_PASSWORD, UserFactory
+from ads.tests.base import BaseTestCase
 
 
-class RegistrationTests(TestCase):
+class RegistrationTests(BaseTestCase):
     def test_register_page_loads(self):
         response = self.client.get(reverse("accounts:register"))
         self.assertEqual(response.status_code, 200)
@@ -54,7 +54,7 @@ class RegistrationTests(TestCase):
         self.assertIn("password2", response.context["form"].errors)
 
 
-class LoginLogoutTests(TestCase):
+class LoginLogoutTests(BaseTestCase):
     def setUp(self):
         self.user = UserFactory(username="someone")
 
@@ -87,3 +87,17 @@ class LoginLogoutTests(TestCase):
         response = self.client.post(reverse("accounts:logout"))
         self.assertRedirects(response, reverse("ads:ad-list"))
         self.assertNotIn("_auth_user_id", self.client.session)
+
+    def test_logout_requires_post(self):
+        self.login(self.user)
+        response = self.client.get(reverse("accounts:logout"))
+        self.assertEqual(response.status_code, 405)
+        self.assertIn("_auth_user_id", self.client.session)
+
+    def test_login_honours_the_next_parameter(self):
+        target = reverse("ads:wishlist")
+        response = self.client.post(
+            f'{reverse("accounts:login")}?next={target}',
+            {"username": "someone", "password": DEFAULT_PASSWORD},
+        )
+        self.assertRedirects(response, target)

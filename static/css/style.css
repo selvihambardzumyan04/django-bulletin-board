@@ -111,6 +111,33 @@ body {
   font-size: 13px;
   margin-top: 4px;
 }
+.stats-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+.stats-table th,
+.stats-table td {
+  text-align: left;
+  padding: 8px 10px;
+  border-bottom: 1px solid #e3e6ec;
+}
+.stats-table th {
+  color: #7a8194;
+  font-size: 13px;
+  font-weight: 600;
+}
+.category-list {
+  list-style: none;
+  padding: 0;
+}
+.category-list li {
+  padding: 10px 0;
+  border-bottom: 1px solid #e3e6ec;
+}
+.category-list .meta {
+  margin-left: 8px;
+}
 .status {
   display: inline-block;
   border-radius: 999px;

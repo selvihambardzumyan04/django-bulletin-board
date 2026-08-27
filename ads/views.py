@@ -1,40 +1,98 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import Count
+from django.contrib.auth.mixins import (
+    LoginRequiredMixin,
+    UserPassesTestMixin,
+)
+from django.db.models import Count, Q
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
+from django.utils.functional import cached_property
 from django.views.decorators.http import require_POST
-from django.views.generic import CreateView, DetailView, ListView
+from django.views.generic import (
+    CreateView,
+    DetailView,
+    ListView,
+    TemplateView,
+)
 
 from .forms import AdForm
-from .models import Ad, WishlistItem
+from .statistics import post_statistics
+from .models import Ad, Category, WishlistItem
 
 
-class AdListView(ListView):
-    model = Ad
+def active_ads():
+    return (
+        Ad.available_objects.filter(status=Ad.Status.ACTIVE)
+        .select_related("owner", "category")
+        .annotate(wishlist_count=Count("wishlisted_by"))
+        .order_by("-created")
+    )
+
+
+class WishlistIdsMixin:
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+        if user.is_authenticated:
+            context["wishlist_ids"] = set(
+                WishlistItem.objects.filter(user=user).values_list(
+                    "ad_id", flat=True
+                )
+            )
+        else:
+            context["wishlist_ids"] = set()
+        return context
+
+
+class AdListView(WishlistIdsMixin, ListView):
     template_name = "ads/ad_list.html"
     context_object_name = "ads"
     paginate_by = 6
 
     def get_queryset(self):
+        return active_ads()
+
+
+class CategoryListView(ListView):
+    template_name = "ads/category_list.html"
+    context_object_name = "categories"
+
+    def get_queryset(self):
         return (
-            Ad.available_objects.filter(status=Ad.Status.ACTIVE)
-            .select_related("owner")
-            .annotate(wishlist_count=Count("wishlisted_by"))
-            .order_by("-created")
+            Category.objects.filter(status=Category.Status.ACTIVE)
+            .annotate(
+                ad_count=Count(
+                    "ads",
+                    filter=Q(
+                        ads__status=Ad.Status.ACTIVE,
+                        ads__is_removed=False,
+                    ),
+                )
+            )
+            .order_by("name")
         )
+
+
+class CategoryAdsView(WishlistIdsMixin, ListView):
+    template_name = "ads/category_detail.html"
+    context_object_name = "ads"
+    paginate_by = 6
+
+    @cached_property
+    def category(self):
+        return get_object_or_404(
+            Category,
+            slug=self.kwargs["slug"],
+            status=Category.Status.ACTIVE,
+        )
+
+    def get_queryset(self):
+        return active_ads().filter(category=self.category)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        if self.request.user.is_authenticated:
-            context["wishlist_ids"] = set(
-                WishlistItem.objects.filter(
-                    user=self.request.user
-                ).values_list("ad_id", flat=True)
-            )
-        else:
-            context["wishlist_ids"] = set()
+        context["category"] = self.category
         return context
 
 
@@ -44,9 +102,11 @@ class AdDetailView(DetailView):
     context_object_name = "ad"
 
     def get_queryset(self):
-        return Ad.available_objects.filter(
-            status=Ad.Status.ACTIVE
-        ).select_related("owner")
+        return (
+            Ad.available_objects.filter(status=Ad.Status.ACTIVE)
+            .select_related("owner", "category")
+            .annotate(wishlist_count=Count("wishlisted_by"))
+        )
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -76,7 +136,12 @@ class MyAdsView(LoginRequiredMixin, ListView):
     paginate_by = 6
 
     def get_queryset(self):
-        return Ad.available_objects.filter(owner=self.request.user)
+        return (
+            Ad.available_objects.filter(owner=self.request.user)
+            .select_related("category")
+            .annotate(wishlist_count=Count("wishlisted_by"))
+            .order_by("-created")
+        )
 
 
 class WishlistView(LoginRequiredMixin, ListView):
@@ -91,10 +156,22 @@ class WishlistView(LoginRequiredMixin, ListView):
                 ad__status=Ad.Status.ACTIVE,
                 ad__is_removed=False,
             )
-            .select_related("ad", "ad__owner")
+            .select_related("ad", "ad__owner", "ad__category")
             .annotate(wishlist_count=Count("ad__wishlisted_by"))
             .order_by("-added")
         )
+
+
+class StatisticsView(UserPassesTestMixin, TemplateView):
+    template_name = "ads/statistics.html"
+
+    def test_func(self):
+        return self.request.user.is_staff
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["stats"] = post_statistics()
+        return context
 
 
 @login_required

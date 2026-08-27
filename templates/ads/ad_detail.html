@@ -20,10 +20,20 @@
     <dd>{{ ad.owner.username }}</dd>
     <dt>Phone</dt>
     <dd>{{ ad.phone_number }}</dd>
+    <dt>Category</dt>
+    <dd>
+      {% if ad.category.status == "active" %}
+      <a href="{% url 'ads:category-detail' ad.category.slug %}">{{ ad.category }}</a>
+      {% else %}
+      {{ ad.category }}
+      {% endif %}
+    </dd>
     <dt>Type</dt>
     <dd>{{ ad.get_type_display }}</dd>
     <dt>Posted</dt>
     <dd>{{ ad.created|date:"d M Y, H:i" }}</dd>
+    <dt>Wishlisted</dt>
+    <dd>{{ ad.wishlist_count }} time{{ ad.wishlist_count|pluralize }}</dd>
   </dl>
 
   {% if user.is_authenticated %}

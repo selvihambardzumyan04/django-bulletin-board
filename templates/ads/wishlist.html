@@ -12,7 +12,7 @@
   {% endif %}
   <h2><a class="ad-link" href="{% url 'ads:ad-detail' item.ad.id %}">{{ item.ad.title }}</a></h2>
   <p class="price">{{ item.ad.price }}</p>
-  <p class="meta">{{ item.ad.owner.username }} · {{ item.ad.phone_number }}</p>
+  <p class="meta">{{ item.ad.owner.username }} · {{ item.ad.category }} · {{ item.ad.phone_number }}</p>
   <p class="wishlist-count">
     In {{ item.wishlist_count }} wishlist{{ item.wishlist_count|pluralize }}
   </p>
@@ -25,15 +25,5 @@
 <p>Your wishlist is empty.</p>
 {% endfor %}
 
-{% if is_paginated %}
-<nav class="pagination">
-  {% if page_obj.has_previous %}
-  <a href="?page={{ page_obj.previous_page_number }}">← Prev</a>
-  {% endif %}
-  <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
-  {% if page_obj.has_next %}
-  <a href="?page={{ page_obj.next_page_number }}">Next →</a>
-  {% endif %}
-</nav>
-{% endif %}
+{% include "ads/_pagination.html" %}
 {% endblock %}

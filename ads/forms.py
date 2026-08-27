@@ -1,7 +1,7 @@
 from django import forms
 from django.core.validators import RegexValidator
 
-from .models import Ad
+from .models import Ad, Category
 
 MAX_IMAGE_SIZE = 1 * 1024 * 1024
 
@@ -21,6 +21,7 @@ class AdForm(forms.ModelForm):
         fields = (
             "title",
             "text",
+            "category",
             "phone_number",
             "image",
             "type",
@@ -31,6 +32,9 @@ class AdForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.fields["category"].queryset = Category.objects.filter(
+            status=Category.Status.ACTIVE
+        )
         self.fields["status"].choices = [
             (value, label)
             for value, label in Ad.Status.choices

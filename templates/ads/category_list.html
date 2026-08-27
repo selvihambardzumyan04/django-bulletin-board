@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}Categories{% endblock %}
+
+{% block content %}
+<h1>Categories</h1>
+
+<ul class="category-list">
+  {% for category in categories %}
+  <li>
+    <a class="ad-link" href="{% url 'ads:category-detail' category.slug %}">
+      {{ category.name }}
+    </a>
+    <span class="meta">
+      {{ category.ad_count }} active ad{{ category.ad_count|pluralize }}
+    </span>
+  </li>
+  {% empty %}
+  <li>No categories yet.</li>
+  {% endfor %}
+</ul>
+{% endblock %}

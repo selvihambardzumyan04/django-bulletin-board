@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}Statistics{% endblock %}
+
+{% block content %}
+<h1>Statistics</h1>
+
+<article class="card">
+  <h2>Posting rate</h2>
+  <p class="meta">
+    Averaged over {{ stats.span_days }} day{{ stats.span_days|pluralize }}
+    since the first post.
+  </p>
+  <dl class="ad-facts">
+    <dt>Per day</dt>
+    <dd>{{ stats.per_day }}</dd>
+    <dt>Per week</dt>
+    <dd>{{ stats.per_week }}</dd>
+    <dt>Per month</dt>
+    <dd>{{ stats.per_month }}</dd>
+  </dl>
+</article>
+
+<article class="card">
+  <h2>Posts by status</h2>
+  <dl class="ad-facts">
+    <dt>All posts</dt>
+    <dd>{{ stats.total }}</dd>
+    <dt><span class="status status-active">Active</span></dt>
+    <dd>{{ stats.active }}</dd>
+    <dt><span class="status status-deactivated">Deactivated</span></dt>
+    <dd>{{ stats.deactivated }}</dd>
+    <dt><span class="status status-blocked">Blocked</span></dt>
+    <dd>{{ stats.blocked }}</dd>
+  </dl>
+  <p class="meta">
+    {{ stats.deleted }} deleted post{{ stats.deleted|pluralize }} excluded
+    from the totals above.
+  </p>
+</article>
+
+<article class="card">
+  <h2>Posts by category</h2>
+  <table class="stats-table">
+    <thead>
+      <tr>
+        <th>Category</th>
+        <th>Status</th>
+        <th>Posts</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for category in stats.categories %}
+      <tr>
+        <td>{{ category.name }}</td>
+        <td>
+          <span class="status status-{{ category.status }}">
+            {{ category.get_status_display }}
+          </span>
+        </td>
+        <td>{{ category.post_count }}</td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="3">No categories yet.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</article>
+{% endblock %}

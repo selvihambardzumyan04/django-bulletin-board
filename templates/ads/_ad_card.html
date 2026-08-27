@@ -1,0 +1,36 @@
+<article class="card">
+  {% if ad.image %}
+  <a href="{% url 'ads:ad-detail' ad.id %}">
+    <img class="ad-image" src="{{ ad.image.url }}" alt="{{ ad.title }}" />
+  </a>
+  {% endif %}
+  <h2><a class="ad-link" href="{% url 'ads:ad-detail' ad.id %}">{{ ad.title }}</a></h2>
+  <p class="price">{{ ad.price }}</p>
+  <p>{{ ad.text|truncatewords:25 }}</p>
+  <p class="meta">
+    {{ ad.owner.username }} ·
+    {% if ad.category.status == "active" %}
+    <a href="{% url 'ads:category-detail' ad.category.slug %}">{{ ad.category }}</a>
+    {% else %}
+    {{ ad.category }}
+    {% endif %}
+    · {{ ad.phone_number }} · {{ ad.get_type_display }} · {{ ad.created|date:"d M Y" }}
+  </p>
+  <p class="wishlist-count">
+    In {{ ad.wishlist_count }} wishlist{{ ad.wishlist_count|pluralize }}
+  </p>
+
+  {% if user.is_authenticated %}
+    {% if ad.id in wishlist_ids %}
+    <form method="post" action="{% url 'ads:wishlist-remove' ad.id %}" class="remove-form">
+      {% csrf_token %}
+      <button class="btn btn-muted" type="submit">In wishlist — remove</button>
+    </form>
+    {% else %}
+    <form method="post" action="{% url 'ads:wishlist-add' ad.id %}">
+      {% csrf_token %}
+      <button class="btn" type="submit">Add to wishlist</button>
+    </form>
+    {% endif %}
+  {% endif %}
+</article>

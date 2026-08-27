@@ -1,17 +1,18 @@
 {% extends "base.html" %}
 
-{% block title %}All ads{% endblock %}
+{% block title %}{{ category }}{% endblock %}
 
 {% block content %}
-<h1>Active ads</h1>
 <p class="meta">
-  <a href="{% url 'ads:category-list' %}">Browse by category →</a>
+  <a href="{% url 'ads:category-list' %}">← All categories</a>
 </p>
+
+<h1>{{ category }}</h1>
 
 {% for ad in ads %}
 {% include "ads/_ad_card.html" %}
 {% empty %}
-<p>No ads yet.</p>
+<p>No active ads in this category yet.</p>
 {% endfor %}
 
 {% include "ads/_pagination.html" %}

@@ -4,6 +4,25 @@ from model_utils.managers import SoftDeletableQuerySet
 from model_utils.models import SoftDeletableModel
 
 
+class Category(models.Model):
+    class Status(models.TextChoices):
+        ACTIVE = "active", "Active"
+        HIDDEN = "hidden", "Hidden"
+
+    name = models.CharField(max_length=100, unique=True, db_index=True)
+    slug = models.SlugField(max_length=100, unique=True, db_index=True)
+    status = models.CharField(
+        max_length=10, choices=Status.choices, default=Status.ACTIVE
+    )
+
+    class Meta:
+        ordering = ["name"]
+        verbose_name_plural = "categories"
+
+    def __str__(self):
+        return self.name
+
+
 class Ad(SoftDeletableModel):
     class Type(models.TextChoices):
         PRIVATE = "private", "Private"
@@ -17,6 +36,11 @@ class Ad(SoftDeletableModel):
     owner = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
+        related_name="ads",
+    )
+    category = models.ForeignKey(
+        Category,
+        on_delete=models.PROTECT,
         related_name="ads",
     )
     phone_number = models.CharField(max_length=20)
