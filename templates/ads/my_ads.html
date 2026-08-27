@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}My posts{% endblock %}
+
+{% block content %}
+<h1>My posts</h1>
+
+{% for ad in ads %}
+<article class="card">
+  {% if ad.image %}
+  <img class="ad-image" src="{{ ad.image.url }}" alt="{{ ad.title }}" />
+  {% endif %}
+  <h2>
+    {% if ad.status == "active" %}
+    <a class="ad-link" href="{% url 'ads:ad-detail' ad.id %}">{{ ad.title }}</a>
+    {% else %}
+    {{ ad.title }}
+    {% endif %}
+  </h2>
+  <p class="price">{{ ad.price }}</p>
+  <p>{{ ad.text|truncatewords:25 }}</p>
+  <p class="meta">
+    {{ ad.get_type_display }} · {{ ad.created|date:"d M Y" }}
+  </p>
+  <p>
+    <span class="status status-{{ ad.status }}">{{ ad.get_status_display }}</span>
+    {% if ad.status != "active" %}
+    <span class="meta">Not visible in the public list.</span>
+    {% endif %}
+  </p>
+</article>
+{% empty %}
+<p>You have not posted anything yet.</p>
+{% endfor %}
+
+{% if is_paginated %}
+<nav class="pagination">
+  {% if page_obj.has_previous %}
+  <a href="?page={{ page_obj.previous_page_number }}">← Prev</a>
+  {% endif %}
+  <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+  {% if page_obj.has_next %}
+  <a href="?page={{ page_obj.next_page_number }}">Next →</a>
+  {% endif %}
+</nav>
+{% endif %}
+{% endblock %}

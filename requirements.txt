@@ -1,0 +1,9 @@
+asgiref==3.12.1
+django-model-utils==5.0.0
+Django==6.1
+factory_boy==3.3.3
+Faker==40.36.0
+pillow==12.3.0
+pycodestyle==2.14.0
+python-dotenv==1.2.3
+sqlparse==0.6.0

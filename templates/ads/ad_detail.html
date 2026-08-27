@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}{{ ad.title }}{% endblock %}
+
+{% block content %}
+<p class="meta"><a href="{% url 'ads:ad-list' %}">← Back to all ads</a></p>
+
+<article class="card">
+  {% if ad.image %}
+  <img class="ad-image ad-image-large" src="{{ ad.image.url }}" alt="{{ ad.title }}" />
+  {% endif %}
+
+  <h1>{{ ad.title }}</h1>
+  <p class="price">{{ ad.price }}</p>
+
+  <p class="ad-text">{{ ad.text|linebreaks }}</p>
+
+  <dl class="ad-facts">
+    <dt>Seller</dt>
+    <dd>{{ ad.owner.username }}</dd>
+    <dt>Phone</dt>
+    <dd>{{ ad.phone_number }}</dd>
+    <dt>Type</dt>
+    <dd>{{ ad.get_type_display }}</dd>
+    <dt>Posted</dt>
+    <dd>{{ ad.created|date:"d M Y, H:i" }}</dd>
+  </dl>
+
+  {% if user.is_authenticated %}
+    {% if in_wishlist %}
+    <form method="post" action="{% url 'ads:wishlist-remove' ad.id %}" class="remove-form">
+      {% csrf_token %}
+      <button class="btn btn-muted" type="submit">In wishlist — remove</button>
+    </form>
+    {% else %}
+    <form method="post" action="{% url 'ads:wishlist-add' ad.id %}">
+      {% csrf_token %}
+      <button class="btn" type="submit">Add to wishlist</button>
+    </form>
+    {% endif %}
+  {% endif %}
+</article>
+{% endblock %}

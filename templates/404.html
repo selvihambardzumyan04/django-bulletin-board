@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block title %}Page not found{% endblock %}
+
+{% block content %}
+<div class="card error-page">
+  <h1>404</h1>
+  <p>We couldn't find that page. It may have been removed, or the address is wrong.</p>
+  <a class="btn" href="{% url 'ads:ad-list' %}">Back to all ads</a>
+</div>
+{% endblock %}

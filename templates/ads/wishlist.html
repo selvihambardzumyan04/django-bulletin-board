@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}My wishlist{% endblock %}
+
+{% block content %}
+<h1>My wishlist</h1>
+
+{% for item in items %}
+<article class="card">
+  {% if item.ad.image %}
+  <img class="ad-image" src="{{ item.ad.image.url }}" alt="{{ item.ad.title }}" />
+  {% endif %}
+  <h2><a class="ad-link" href="{% url 'ads:ad-detail' item.ad.id %}">{{ item.ad.title }}</a></h2>
+  <p class="price">{{ item.ad.price }}</p>
+  <p class="meta">{{ item.ad.owner.username }} · {{ item.ad.phone_number }}</p>
+  <p class="wishlist-count">
+    In {{ item.wishlist_count }} wishlist{{ item.wishlist_count|pluralize }}
+  </p>
+  <form method="post" action="{% url 'ads:wishlist-remove' item.ad.id %}" class="remove-form">
+    {% csrf_token %}
+    <button class="btn btn-muted" type="submit">Remove</button>
+  </form>
+</article>
+{% empty %}
+<p>Your wishlist is empty.</p>
+{% endfor %}
+
+{% if is_paginated %}
+<nav class="pagination">
+  {% if page_obj.has_previous %}
+  <a href="?page={{ page_obj.previous_page_number }}">← Prev</a>
+  {% endif %}
+  <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+  {% if page_obj.has_next %}
+  <a href="?page={{ page_obj.next_page_number }}">Next →</a>
+  {% endif %}
+</nav>
+{% endif %}
+{% endblock %}
